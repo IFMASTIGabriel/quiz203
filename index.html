@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz • Machine Learning e IA Preditiva</title>
+<style>
+:root{--bg:#0b1020;--panel:#151d33;--panel2:#1c2945;--text:#edf2ff;--muted:#aab7d1;--accent:#7c9cff;--good:#3cc98a;--bad:#ff7474;--line:#2c3a5b}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top right,#1c2c52 0,#0b1020 42%);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text);min-height:100vh;padding:28px 16px}
+.wrap{max-width:850px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.tag{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#a9bcff;font-weight:800}
+h1{font-size:clamp(27px,5vw,42px);line-height:1.08;margin:8px 0 10px}.intro{color:var(--muted);line-height:1.6;margin:0 0 24px;max-width:700px}
+.card{background:linear-gradient(145deg,rgba(25,36,62,.98),rgba(17,25,44,.98));border:1px solid var(--line);border-radius:22px;padding:clamp(20px,4vw,32px);box-shadow:0 20px 60px #0005}
+.meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:14px;margin-bottom:12px}.track{height:8px;background:#263452;border-radius:99px;overflow:hidden;margin-bottom:26px}.fill{height:100%;width:0;background:linear-gradient(90deg,#6d8cff,#8c6dff);transition:width .25s}
+h2{font-size:clamp(19px,3vw,25px);line-height:1.35;margin:0 0 20px}
+.options{display:grid;gap:11px}.option{display:flex;align-items:flex-start;gap:13px;width:100%;text-align:left;padding:15px 16px;border-radius:14px;border:1px solid #344465;background:#1a2742;color:var(--text);font-size:15px;line-height:1.45;cursor:pointer;transition:.18s}
+.option:hover:not(:disabled){border-color:var(--accent);background:#223354;transform:translateY(-1px)}.letter{flex:0 0 28px;height:28px;border-radius:8px;background:#2b3d66;display:grid;place-items:center;font-weight:800;color:#cbd7ff;font-size:13px}
+.option:disabled{cursor:default}.option.correct{border-color:var(--good);background:#153a35}.option.wrong{border-color:var(--bad);background:#42262e}.option.correct .letter{background:var(--good);color:#06271b}.option.wrong .letter{background:var(--bad);color:#351015}
+.feedback{display:none;margin-top:18px;padding:15px 17px;border-radius:13px;background:#202e4a;border:1px solid #3a4c70;line-height:1.55}.feedback.show{display:block}.feedback strong{display:block;margin-bottom:5px}
+.actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:22px;flex-wrap:wrap}
+button.primary,.restart{border:0;border-radius:12px;padding:13px 20px;background:var(--accent);color:#091126;font-weight:800;font-size:15px;cursor:pointer}
+button.primary:disabled{opacity:.35;cursor:not-allowed}.subtle{color:var(--muted);font-size:13px}
+.result{text-align:center}.score{font-size:clamp(48px,10vw,76px);font-weight:900;letter-spacing:-.05em;margin:14px 0;color:#a9bcff}.result p{color:var(--muted);line-height:1.6}.summary{margin:24px auto;text-align:left;max-width:570px;background:#1b2945;padding:18px;border-radius:14px}.summary div{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}.summary div:last-child{border:0}
+footer{text-align:center;color:#7888a8;font-size:12px;margin:18px 0 0}
+@media(max-width:520px){body{padding:18px 11px}.card{border-radius:17px}.option{padding:13px}.meta{font-size:12px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><div class="tag">Atividade interativa · 2º ano do Ensino Médio</div><div class="tag">20 questões · 5 alternativas</div></div>
+  <h1>Quiz: Machine Learning e IA Preditiva</h1>
+  <p class="intro">Teste seus conhecimentos sobre aprendizado de máquina, tipos de aprendizagem, análise de dados e inteligência artificial preditiva. Escolha uma alternativa por questão e confira a explicação ao responder.</p>
+  <section class="card" id="quizCard">
+    <div class="meta"><span id="counter">Questão 1 de 20</span><span id="scoreLive">Acertos: 0</span></div>
+    <div class="track"><div class="fill" id="progress"></div></div>
+    <h2 id="question"></h2>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback" aria-live="polite"></div>
+    <div class="actions"><span class="subtle" id="status">Selecione uma alternativa para continuar.</span><button class="primary" id="next" disabled>Próxima questão →</button></div>
+  </section>
+  <section class="card result" id="resultCard" hidden>
+    <div class="tag">Resultado final</div><h2>Quiz concluído!</h2><div class="score" id="finalScore">0/20</div><p id="message"></p>
+    <div class="summary" id="summary"></div>
+    <button class="restart" id="restart">Refazer quiz</button>
+  </section>
+  <footer>Conteúdo elaborado com base nos materiais de aula sobre Machine Learning e IA preditiva.</footer>
+</main>
+<script>
+const original = [{"q": "O que é Machine Learning (aprendizado de máquina)?", "opts": ["Um sistema usado apenas para armazenar grandes arquivos.", "Um tipo de computador que funciona sem receber dados.", "Um programa que executa somente instruções fixas, sem identificar padrões.", "Um subconjunto da inteligência artificial que aprende e melhora com dados.", "Uma área dedicada exclusivamente à criação de robôs físicos."], "a": 3, "exp": "Machine Learning é um subconjunto da IA que constrói sistemas capazes de aprender e melhorar à medida que consomem dados."}, {"q": "Qual afirmação expressa corretamente a relação entre IA e Machine Learning?", "opts": ["IA e Machine Learning são termos que significam exatamente a mesma coisa.", "Toda IA é Machine Learning, mas nem todo Machine Learning é IA.", "Machine Learning não faz parte da inteligência artificial.", "A IA só funciona quando utiliza aprendizado por reforço.", "Todo Machine Learning é IA, mas nem toda IA é Machine Learning."], "a": 4, "exp": "Machine Learning é uma parte da inteligência artificial; existem sistemas de IA que não utilizam Machine Learning."}, {"q": "Qual é a principal finalidade do Machine Learning ao analisar conjuntos de dados?", "opts": ["Transformar automaticamente qualquer dado em uma imagem.", "Descobrir padrões e relações que podem apoiar previsões e classificações.", "Substituir todos os profissionais que trabalham com dados.", "Garantir que todas as previsões estejam corretas.", "Eliminar a necessidade de testar sistemas."], "a": 1, "exp": "Os algoritmos identificam padrões nos dados e geram modelos que podem ser usados para prever ou categorizar informações."}, {"q": "Qual é a diferença entre algoritmo e modelo no contexto do Machine Learning?", "opts": ["Os dois termos representam exclusivamente o banco de dados.", "Algoritmo é o conjunto de regras e procedimentos; modelo é o resultado de sua aplicação aos dados.", "Modelo é uma regra escrita por uma pessoa e algoritmo é uma previsão.", "Algoritmo e modelo são nomes diferentes para o mesmo arquivo.", "Algoritmo é o resultado do treinamento; modelo é o conjunto de dados original."], "a": 1, "exp": "O algoritmo define procedimentos para resolver uma tarefa. Após ser aplicado aos dados no treinamento, produz-se um modelo."}, {"q": "Em qual momento do processo descrito no material temos um modelo, e não apenas um algoritmo?", "opts": ["Depois que o algoritmo passa pelo treinamento com dados.", "Assim que o computador é ligado.", "Quando os dados são apagados.", "Somente quando o sistema é conectado à internet.", "Antes de selecionar qualquer dado."], "a": 0, "exp": "Antes do treinamento há um algoritmo; após o treinamento, obtém-se um modelo."}, {"q": "Qual alternativa apresenta um recurso típico do Machine Learning?", "opts": ["Dispensar completamente a definição de objetivos.", "Descobrir padrões automaticamente nos dados.", "Impedir que novos dados sejam analisados.", "Garantir resultados sem margem de erro.", "Funcionar apenas com pequenas quantidades de informação."], "a": 1, "exp": "Entre os recursos apresentados estão a descoberta automática de padrões, previsão de resultados e análise de grandes volumes de dados."}, {"q": "Uma equipe treina um filtro com e-mails previamente identificados como 'spam' ou 'não spam'. Que tipo de aprendizado está sendo utilizado?", "opts": ["Aprendizado semissupervisionado.", "Aprendizado por tentativa aleatória.", "Aprendizado supervisionado.", "Aprendizado por reforço.", "Aprendizado não supervisionado."], "a": 2, "exp": "No aprendizado supervisionado, os exemplos de treinamento já possuem rótulos, como as categorias spam e não spam."}, {"q": "O que caracteriza o aprendizado não supervisionado?", "opts": ["O sistema identifica padrões sem depender de dados previamente rotulados.", "O algoritmo recebe a resposta correta para cada exemplo.", "Todos os dados precisam ser classificados manualmente.", "O sistema aprende exclusivamente por recompensas e penalizações.", "O treinamento utiliza apenas exemplos com duas categorias."], "a": 0, "exp": "No aprendizado não supervisionado, o algoritmo procura padrões e estruturas em dados sem rótulos prévios."}, {"q": "Quando o aprendizado semissupervisionado pode ser especialmente útil?", "opts": ["Quando há poucos dados disponíveis e todos são irrelevantes.", "Quando o sistema precisa aprender sem utilizar dado algum.", "Quando o objetivo é impedir que o modelo seja atualizado.", "Quando existe uma grande quantidade de dados, mas apenas parte deles está rotulada.", "Quando todos os dados já estão rotulados e não há necessidade de outros métodos."], "a": 3, "exp": "O aprendizado semissupervisionado combina métodos supervisionados e não supervisionados para lidar com conjuntos que têm poucos dados rotulados."}, {"q": "Como funciona o aprendizado de máquina por reforço?", "opts": ["O sistema recebe sempre a resposta correta antes de agir.", "O sistema memoriza uma lista fixa de respostas e não muda suas decisões.", "O sistema apenas agrupa dados sem qualquer objetivo.", "O sistema utiliza somente dados rotulados por especialistas.", "O sistema aprende com as consequências das ações, recebendo recompensas ou penalizações."], "a": 4, "exp": "No reforço, o sistema aprende por tentativas e erros, usando recompensas e penalizações para melhorar suas decisões."}, {"q": "Qual situação é um exemplo de uso de Machine Learning na área da saúde, conforme o material?", "opts": ["Criar imagens médicas sem analisar informações.", "Analisar exames de imagem para identificar padrões e possíveis anormalidades.", "Substituir todos os exames por opiniões sem dados.", "Garantir um diagnóstico sem avaliação profissional.", "Impedir que profissionais de saúde consultem resultados."], "a": 1, "exp": "O material cita a análise de ressonâncias, raios-X e tomografias para identificar padrões e detectar anormalidades."}, {"q": "O que é IA preditiva?", "opts": ["Uma ferramenta que sempre sabe exatamente o que ocorrerá.", "Um sistema que descreve apenas fatos que já aconteceram.", "Uma tecnologia que cria exclusivamente textos e imagens.", "Uma tecnologia que estima o que provavelmente acontecerá com base em padrões dos dados.", "Um sistema que toma decisões sem utilizar informações."], "a": 3, "exp": "A IA preditiva utiliza estatística e aprendizado de máquina para estimar eventos futuros. Suas previsões não são certezas."}, {"q": "Uma loja analisa vendas anteriores e conclui que vendeu mais guarda-chuvas nos dias de chuva. Que tipo de análise é essa?", "opts": ["Prescritiva, pois recomenda uma ação futura.", "Generativa, pois cria novos produtos.", "Reforçada, pois aprende por recompensas.", "Preditiva, pois estima o que acontecerá.", "Descritiva, pois relata o que aconteceu."], "a": 4, "exp": "A análise descritiva responde 'o que aconteceu?', examinando fatos e dados do passado."}, {"q": "A partir de uma previsão de aumento da chuva, uma loja estima que a procura por guarda-chuvas poderá crescer. Qual análise está sendo feita?", "opts": ["Análise preditiva.", "Análise prescritiva.", "Análise descritiva.", "Análise de rotulagem.", "Análise de armazenamento."], "a": 0, "exp": "A análise preditiva estima o que provavelmente acontecerá, como uma possível elevação da demanda."}, {"q": "Uma loja prevê aumento da procura por guarda-chuvas e decide reforçar o estoque. Qual tipo de análise está relacionado à recomendação dessa ação?", "opts": ["Não supervisionada.", "Generativa.", "Descritiva.", "Prescritiva.", "Preditiva."], "a": 3, "exp": "A análise prescritiva responde 'que ação tomar?', usando informações para orientar decisões."}, {"q": "Por que a qualidade dos dados é importante para um modelo preditivo?", "opts": ["Porque a qualidade elimina a necessidade de testes.", "Porque a quantidade de dados garante sozinha a precisão.", "Porque modelos só podem aprender com dados sem erros aparentes.", "Porque dados antigos sempre representam perfeitamente a realidade atual.", "Porque dados incorretos, incompletos ou pouco representativos podem prejudicar as previsões."], "a": 4, "exp": "Qualidade, relevância e representatividade influenciam a precisão. Um modelo também pode aprender problemas presentes nos dados."}, {"q": "Qual é a finalidade de separar dados de treinamento e dados de teste?", "opts": ["Treinar o modelo em uma parte dos dados e verificar seu desempenho em dados não usados no treinamento.", "Evitar que o modelo receba qualquer informação durante o treinamento.", "Usar os mesmos dados para ajustar e avaliar o modelo sem distinção.", "Garantir que o modelo nunca cometa erros.", "Excluir todos os dados que não produzem a previsão esperada."], "a": 0, "exp": "O conjunto de teste deve permanecer separado dos ajustes para verificar o desempenho do modelo em dados que não foram usados no treinamento."}, {"q": "Na construção de um modelo preditivo, o que acontece na etapa de limpeza dos dados?", "opts": ["O modelo é publicado sem avaliação.", "O sistema escolhe automaticamente a decisão final de negócio.", "São tratados valores ausentes, discrepantes e irrelevantes.", "Os dados são transformados em recompensas e penalizações.", "Os resultados do teste são usados para substituir todos os dados."], "a": 2, "exp": "A limpeza trata problemas como valores ausentes, discrepantes e informações irrelevantes."}, {"q": "O que são embeddings, de acordo com a apresentação?", "opts": ["Cópias exatas dos dados originais, sem transformação.", "Regras que impedem a comparação entre informações.", "Representações de informações em forma de vetores, ou listas de números.", "Imagens usadas para decorar os resultados de um modelo.", "Etiquetas escritas manualmente para cada previsão."], "a": 2, "exp": "Embeddings transformam informações em vetores numéricos que ajudam a representar similaridades e relações."}, {"q": "Qual alternativa diferencia corretamente IA preditiva de IA generativa?", "opts": ["A generativa prevê exclusivamente falhas industriais; a preditiva cria códigos.", "As duas têm exatamente o mesmo objetivo e entregam os mesmos resultados.", "A preditiva estima resultados; a generativa produz conteúdo novo, como textos e imagens.", "A preditiva cria textos; a generativa apenas calcula probabilidades.", "A preditiva não utiliza dados; a generativa utiliza somente imagens."], "a": 2, "exp": "A IA preditiva estima resultados a partir de padrões; a IA generativa produz conteúdo novo, como textos, imagens ou código."}, {"q": "Qual é um desafio importante no uso da IA preditiva?", "opts": ["Dados enviesados, falta de transparência e confiança excessiva nas previsões.", "A impossibilidade de utilizar dados históricos.", "A obrigação de que todas as previsões sejam divulgadas como certezas.", "A ausência de qualquer influência de fatores externos.", "A garantia de que decisões automatizadas sejam sempre justas."], "a": 0, "exp": "A apresentação destaca riscos de viés, dificuldade de explicar decisões, mudanças no mundo e excesso de confiança. O julgamento humano continua importante."}];
+let questions = [], index = 0, score = 0, answered = false, correctCount = 0;
+const letters = ["A","B","C","D","E"];
+const $ = id => document.getElementById(id);
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+function start(){
+  questions = original.map(q => {
+    const correctText = q.opts[q.a];
+    const opts = shuffle(q.opts.map((text,i)=>({text,correct:text===correctText})));
+    return {...q, opts};
+  });
+  // Randomize question order as well as answer positions on each new attempt.
+  shuffle(questions);
+  index=0;score=0;correctCount=0;answered=false;
+  $("quizCard").hidden=false;$("resultCard").hidden=true;
+  render();
+}
+function render(){
+  const q=questions[index];answered=false;
+  $("counter").textContent=`Questão ${index+1} de ${questions.length}`;
+  $("scoreLive").textContent=`Acertos: ${score}`;
+  $("progress").style.width=`${(index/questions.length)*100}%`;
+  $("question").textContent=q.q;
+  $("options").innerHTML="";
+  $("feedback").className="feedback";$("feedback").innerHTML="";
+  $("status").textContent="Selecione uma alternativa para continuar.";
+  $("next").disabled=true;$("next").textContent=index===questions.length-1?"Ver resultado":"Próxima questão →";
+  q.opts.forEach((o,i)=>{
+    const b=document.createElement("button");b.className="option";
+    b.innerHTML=`<span class="letter">${letters[i]}</span><span></span>`;
+    b.querySelector("span:last-child").textContent=o.text;
+    b.addEventListener("click",()=>choose(i));$("options").appendChild(b);
+  });
+}
+function choose(choice){
+  if(answered)return;answered=true;
+  const q=questions[index], selected=q.opts[choice], buttons=[...$("options").children];
+  buttons.forEach((b,i)=>{b.disabled=true;if(q.opts[i].correct)b.classList.add("correct");else if(i===choice)b.classList.add("wrong");});
+  if(selected.correct){score++;correctCount++;}
+  $("scoreLive").textContent=`Acertos: ${score}`;
+  $("feedback").className="feedback show";
+  const heading=selected.correct?"Muito bem! Você acertou.":"Não foi dessa vez.";
+  $("feedback").innerHTML=`<strong>${heading}</strong>`;
+  const p=document.createElement("div");p.textContent=q.exp;$("feedback").appendChild(p);
+  $("status").textContent=selected.correct?"Resposta correta":"Resposta incorreta";
+  $("next").disabled=false;
+}
+function finish(){
+  $("quizCard").hidden=true;$("resultCard").hidden=false;
+  $("progress").style.width="100%";
+  $("finalScore").textContent=`${score}/${questions.length}`;
+  const pct=Math.round(score/questions.length*100);
+  $("message").textContent=pct>=90?"Excelente desempenho! Você demonstrou domínio dos principais conceitos.":pct>=70?"Muito bom! Você compreendeu boa parte do conteúdo.":pct>=50?"Bom esforço! Revise as explicações das questões para consolidar o aprendizado.":"Continue estudando! Reveja os materiais e tente novamente para avançar.";
+  $("summary").innerHTML="";
+  [["Aproveitamento",`${pct}%`],["Acertos",score],["Questões para revisar",questions.length-score]].forEach(([k,v])=>{
+    const row=document.createElement("div"),a=document.createElement("span"),b=document.createElement("strong");
+    a.textContent=k;b.textContent=v;row.append(a,b);$("summary").appendChild(row);
+  });
+}
+$("next").addEventListener("click",()=>{if(!answered)return;if(index<questions.length-1){index++;render();}else finish();});
+$("restart").addEventListener("click",start);
+start();
+</script>
+</body>
+</html>
